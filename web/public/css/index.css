@@ -1,0 +1,13 @@
+body {
+    background-color: aliceblue;
+}
+#chat-container {
+    height: 200px;
+    overflow-y: scroll;
+    background-color: white;
+    border: 1px dashed #0b2e13;
+}
+
+.input-message {
+    padding: 0;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="/public/vendor/bootstrap/css/bootstrap.css" crossorigin="anonymous">
+
+		<link rel="icon" href="/public/img/favicon.ico" type="image/x-icon" />
+		<link rel="stylesheet" type="text/css" href="/public/css/index.css">
+
+		<title>{{ .title }}</title>
+	</head>
+	<body>
+		<h1>Web chat</h1>
+
+		<div class="row">
+			<div class="col-3"></div>
+			<div id="chat-container" class="col-3 mb-3">
+				<script id="template-msg-row" type="text/template">
+					<div class="row"><div class="col-12">{%message%}</div></div>
+				</script>
+			</div>
+			<div class="col-6"></div>
+		</div>
+		<div class="row">
+			<div class="col-3"></div>
+			<div class="col-3">
+				<form id="send-frm" class="needs-validation" action="#">
+					<div class="row">
+						<div class="col-md-12 mb-1 input-message">
+							<textarea id="send-msg" autocomplete="off" class="form-control" placeholder="Enter message" required></textarea>
+						</div>
+					</div>
+					<hr class="mb-4">
+					<button id="send-btn" class="btn btn-primary btn-lg" type="submit">Send</button>
+				</form>
+			</div>
+			<div class="col-6"></div>
+		</div>
+
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<script src="/public/vendor/js/jquery-3.4.1.slim.min.js" crossorigin="anonymous"></script>
+		<script src="/public/vendor/js/popper.min.js" crossorigin="anonymous"></script>
+		<script src="/public/vendor/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+		<script src="/public/js/index.js"></script>
+	</body>
+</html>

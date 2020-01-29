@@ -22,7 +22,7 @@ $(function() {
         var value = el.val();
         el.val(null);
         console.log(value);
-        server.send(value);
+        server.send(value + "\n");
         return false;
     })
 

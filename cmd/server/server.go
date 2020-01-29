@@ -18,18 +18,18 @@ var upgrader = websocket.Upgrader{
 
 type Msg struct {
 	clientKey string
-	text string
+	text      string
 }
 
 type NewClientEvent struct {
 	clientKey string
-	msgChain chan Msg
+	msgChain  chan Msg
 }
 
 var (
 	clientRequest    = make(chan *NewClientEvent, 100)
 	clientDisconnect = make(chan string, 100)
-	broadcast = make(chan *Msg, 100)
+	broadcast        = make(chan *Msg, 100)
 )
 
 const (
@@ -47,18 +47,18 @@ const (
 )
 
 // serveWs handles websocket requests from the peer.
-func handlesWebSocketRequests(w http.ResponseWriter, r *http.Request){
+func handlesWebSocketRequests(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	conn.WriteMessage(websocket.BinaryMessage, []byte{'H', 'e', 'l', 'l', 'o'})
+	conn.WriteMessage(websocket.BinaryMessage, []byte{'H', 'e', 'l', 'l', 'o', '\n'})
 
 	msgChan := make(chan Msg, 100)
 	clientKey := r.RemoteAddr
-	clientRequest <- &NewClientEvent{clientKey:clientKey, msgChain:msgChan}
+	clientRequest <- &NewClientEvent{clientKey: clientKey, msgChain: msgChan}
 
 	defer func(clientKey string) {
 		clientDisconnect <- clientKey
@@ -66,7 +66,7 @@ func handlesWebSocketRequests(w http.ResponseWriter, r *http.Request){
 	}(clientKey)
 
 	go func() {
-		for msg := range msgChan{
+		for msg := range msgChan {
 			conn.WriteMessage(websocket.BinaryMessage, []byte(msg.text))
 		}
 	}()
@@ -99,22 +99,22 @@ func handlesWebSocketRequests(w http.ResponseWriter, r *http.Request){
 			}
 			break
 		}
-		broadcast <- &Msg{text:string(message), clientKey:clientKey} // ?
+		broadcast <- &Msg{text: string(message), clientKey: clientKey} // ?
 	}
 }
 
-func router()  {
+func router() {
 	clients := make(map[string]chan Msg)
 	for {
 		select {
-		case req := <- clientRequest:
+		case req := <-clientRequest:
 			clients[req.clientKey] = req.msgChain
 			log.Println("WebSocket connected: " + req.clientKey)
-		case clientKey := <- clientDisconnect:
+		case clientKey := <-clientDisconnect:
 			close(clients[clientKey])
 			delete(clients, clientKey)
 			log.Println("WebSocket disconnected: " + clientKey)
-		case msg := <- broadcast:
+		case msg := <-broadcast:
 			for _, msgChan := range clients {
 				if cap(msgChan) > len(msgChan) {
 					msgChan <- *msg

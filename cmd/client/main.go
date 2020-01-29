@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -8,25 +9,70 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var (
+	msgChan    = make(chan string, 100)
+	recivedMsg = make(chan string, 100)
+)
+
 func main() {
 	host := getEnv("HOST", "localhost")
-	c, _, _ := websocket.DefaultDialer.Dial("ws://"+host+":3000/ws", nil)
+	conn, _, err := websocket.DefaultDialer.Dial("ws://"+host+":3000/ws", nil)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
+
+	defer conn.Close()
 
 	go func(c *websocket.Conn) {
-		defer c.Close()
-
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			fmt.Println(fmt.Sprintf("Unsupported format:'%v'", message))
+			recivedMsg <- string(message)
 
 		}
-	}(c)
+	}(conn)
 
-	select {}
+	go func() {
+		for msg := range msgChan {
+			conn.WriteMessage(websocket.BinaryMessage, []byte(msg))
+		}
+	}()
+
+	writeFile()
+
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter text: ")
+		text, _ := reader.ReadString('\n')
+		fmt.Println(text)
+
+		msgChan <- text
+	}
+}
+
+func writeFile() {
+	// open output file
+	fo, err := os.Create("output.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		// close fo on exit and check for its returned error
+		defer fo.Close()
+
+		// write a chunk
+		for msg := range recivedMsg {
+			if _, err := fo.Write([]byte(msg)); err != nil {
+				panic(err)
+			}
+		}
+
+	}()
 }
 
 func getEnv(key, fallback string) string {
